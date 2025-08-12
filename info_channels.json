@@ -1,0 +1,8 @@
+{
+    "servers": {},
+    "global_settings": {
+        "default_all_channels": false,
+        "default_cooldown": 30,
+        "default_daily_limit": 30
+    }
+}

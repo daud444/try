@@ -1,0 +1,17 @@
+{
+    "servers": {
+        "1285890823623409666": {
+            "check_channels": [
+                "1364593249599094876",
+                "1371065486493745222"
+            ],
+            "config": {
+                "cooldown": 20
+            }
+        }
+    },
+    "global_settings": {
+        "default_all_channels": false,
+        "default_cooldown": 30
+    }
+}
