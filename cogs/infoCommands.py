@@ -1,4 +1,4 @@
-# Modified infoCommands.py
+# Modified infoCommands.py with region detection from UID
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -18,7 +18,28 @@ class InfoCommands(commands.Cog):
         self.bot = bot
         self.config_data = self.load_config()
         self.cooldowns = {}
-        self.regions = ["PK", "IN", "BR", "ID", "VN", "TH", "TR", "RU", "EU", "NA"]
+        self.regions = {
+            "1": "EN",  # Europe/International
+            "2": "VN",  # Vietnam
+            "3": "TH",  # Thailand
+            "4": "ID",  # Indonesia
+            "5": "RU",  # Russia
+            "6": "PT",  # Portugal/Brazil
+            "7": "DE",  # Germany
+            "8": "FR",  # France
+            "9": "ES",  # Spain
+            "10": "TR",  # Turkey
+            "11": "PK",  # Pakistan
+            "12": "IN",  # India
+            "13": "BD",  # Bangladesh
+            "14": "SA",  # Saudi Arabia
+            "15": "AE",  # UAE
+            "16": "MY",  # Malaysia
+            "17": "PH",  # Philippines
+            "18": "BR",  # Brazil
+            "19": "MX",  # Mexico
+            "20": "US",  # USA
+        }
         self.ranks = ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Heroic"]
         self.titles = ["Rookie", "Veteran", "Elite", "Master", "Grandmaster", "Legend"]
         self.avatars = [f"1020000{str(i).zfill(2)}" for i in range(1, 30)]
@@ -56,9 +77,18 @@ class InfoCommands(commands.Cog):
         allowed_channels = self.config_data["servers"].get(guild_id, {}).get("info_channels", [])
         return True if not allowed_channels else str(ctx.channel.id) in allowed_channels
 
+    def detect_region_from_uid(self, uid):
+        """Detect region based on UID pattern"""
+        # First digit method (simplified version)
+        if len(uid) >= 1:
+            first_digit = uid[0]
+            return self.regions.get(first_digit, "PK")  # Default to PK if not found
+        
+        return "PK"  # Default to Pakistan if UID is empty
+
     def generate_mock_data(self, uid):
         """Generate mock player data based on UID"""
-        region = random.choice(self.regions)
+        region = self.detect_region_from_uid(uid)
         level = random.randint(1, 70)
         exp = random.randint(1000, 500000)
         likes = random.randint(0, 5000)
@@ -143,7 +173,7 @@ class InfoCommands(commands.Cog):
 
         try:
             async with ctx.typing():
-                # Generate mock data instead of API call
+                # Generate mock data with region detection
                 mock_data = self.generate_mock_data(uid)
                 player = mock_data["basicInfo"]
                 clan = mock_data.get("clanBasicInfo", {})
@@ -162,7 +192,7 @@ class InfoCommands(commands.Cog):
                 f"**Nickname:** {player.get('nickname', 'Unknown')}",
                 f"**UID:** `{uid}`",
                 f"**Level:** {player.get('level', '?')} (Exp: {player.get('exp', '?')})",
-                f"**Region:** {player.get('region', 'Unknown')}",
+                f"**Region:** {player.get('region', 'Unknown')} (auto-detected)",
                 f"**Likes:** {player.get('liked', '?')}",
                 f"**Honor Score:** {player.get('honorScore', '?')}",
                 f"**Signature:** {player.get('signature', 'N/A')}",
@@ -218,7 +248,7 @@ class InfoCommands(commands.Cog):
                     ])
                 embed.add_field(name="┌ GUILD INFO", value="\n".join(guild_info), inline=False)
 
-            embed.set_footer(text="Developed by: nopethug")
+            embed.set_footer(text="Developed by: nopethug | Region detected from UID")
             await ctx.send(embed=embed)
 
         except Exception as e:
